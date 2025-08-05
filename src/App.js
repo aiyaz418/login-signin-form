@@ -1,11 +1,12 @@
 import './App.css';
-import { default as LoginSignupForm } from './components/LoginSignupForm/LoginSignupForm.jsx';
+import LoginSignupForm from './components/LoginSignupForm/LoginSignupForm.jsx';
+import Home from "./components/Home";
 
 function App() {
   return (
-<div className="App">
-  <LoginSignupForm />
-</div>
+    <div className="App">
+      <LoginSignupForm />
+    </div>
   );
 }
 
