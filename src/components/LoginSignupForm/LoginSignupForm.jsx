@@ -1,11 +1,14 @@
 import { useState } from "react";
 import "./LoginSignupForm.css";
+import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 function LoginSignupForm() {
   const [action, setAction] = useState("Sign Up");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -13,6 +16,9 @@ function LoginSignupForm() {
       name,
       email,
       password,
+    });
+    navigate("/dashboard", {
+      state: { name, email, password, action },
     });
   };
 
