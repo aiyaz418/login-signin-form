@@ -31,18 +31,18 @@ function LoginSignupForm() {
 
         <div className="form-container">
           <button
-            className={action === "Sign up" ? "submit gray" : "submit"}
+            className={action === "Login" ? "submit" : "submit gray"}
             type="button"
             onClick={() => setAction("Login")}
           >
             Login
           </button>
           <button
-            className={action === "Login" ? "submit gray" : "submit"}
+            className={action === "Sign Up" ? "submit" : "submit gray"}
             type="button"
-            onClick={() => setAction("Sign up")}
+            onClick={() => setAction("Sign Up")}
           >
-            Sign up
+            Sign Up
           </button>
         </div>
         <div className="input">
@@ -74,7 +74,7 @@ function LoginSignupForm() {
           </div>
         </div>
         <div className="forgot-password">
-          {action === "Sign Up" ? <div></div> : <span>Forgot Password?</span>}
+          {action === "Login" ? <span>Forgot Password?</span> : <div></div>}
         </div>
         <div className="submit-container">
           <button className="submit" type="submit">
@@ -82,11 +82,24 @@ function LoginSignupForm() {
           </button>
           <div className="signup-text">
             {action === "Sign Up" ? (
-              <div></div>
+              <div className="signup-text">
+                {"Already a member? "}
+                <span
+                  onClick={() => setAction("Login")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Login now
+                </span>
+              </div>
             ) : (
               <div className="signup-text">
                 {"Not a member? "}
-                <span>Signup now</span>
+                <span
+                  onClick={() => setAction("Sign Up")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Signup now
+                </span>
               </div>
             )}
           </div>
