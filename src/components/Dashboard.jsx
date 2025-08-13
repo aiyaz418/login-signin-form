@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -11,13 +10,35 @@ function Dashboard() {
   const [editName, setEditName] = useState(name);
   const [editEmail, setEditEmail] = useState(email);
   const [editPassword, setEditPassword] = useState(password);
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowWelcome(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSave = () => {
     setIsEditing(false);
   };
 
+  {
+  }
   return (
     <div className="container">
+      {showWelcome && (
+        <div
+          style={{
+            color: "#0f0f0f",
+            padding: "16px",
+            textAlign: "center",
+            fontSize: "22px",
+            borderRadius: "8px",
+            margin: "20px 0",
+          }}
+        >
+          Welcome User
+        </div>
+      )}
       <div>
         <h1 style={{ color: "black", fontSize: "60px", textAlign: "center" }}>
           Dashboard
