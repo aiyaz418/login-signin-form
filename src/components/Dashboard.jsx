@@ -36,7 +36,7 @@ function Dashboard() {
             margin: "20px 0",
           }}
         >
-          Welcome User
+          Welcome User! <br /> You may edit your details below.
         </div>
       )}
       <div>
