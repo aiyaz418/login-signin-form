@@ -12,50 +12,77 @@ function Dashboard() {
   const location = useLocation();
   const { name, email, password, action } = location.state || {};
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(name);
-  const [editEmail, setEditEmail] = useState(email);
-  const [editPassword, setEditPassword] = useState(password);
+  const [users, setUsers] = useState([]);
+  const [editingUserId, setEditingUserId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
   useEffect(() => {
-    const savedUser = getFromLocalStorage("user");
-    if (savedUser) {
-      setEditName(savedUser.name || name);
-      setEditEmail(savedUser.email || email);
-      setEditPassword(savedUser.password || password);
-    }
+    const savedUsers = getFromLocalStorage("users") || [];
+    setUsers(savedUsers);
 
     if (name || email || password) {
-      const userData = { name, email, password };
-      saveToLocalStorage("user", userData);
-      console.log("Data saved to localStorage:", userData);
+      const newUser = {
+        id: Date.now(),
+        name: name || "",
+        email: email || "",
+        password: password || "",
+      };
+
+      const existingUserIndex = savedUsers.findIndex(
+        (user) => user.email === email
+      );
+
+      if (existingUserIndex === -1) {
+        const updatedUsers = [...savedUsers, newUser];
+        setUsers(updatedUsers);
+        saveToLocalStorage("users", updatedUsers);
+        console.log("New user registered:", newUser);
+      }
     }
   }, [name, email, password]);
 
-  const updateUserData = (field, value) => {
-    updateLocalStorage("user", { [field]: value });
+  const deleteUser = (userId) => {
+    const updatedUsers = users.filter((user) => user.id !== userId);
+    setUsers(updatedUsers);
+    saveToLocalStorage("users", updatedUsers);
+    console.log("User deleted:", userId);
   };
 
-  const clearUserData = () => {
-    deleteFromLocalStorage("user");
-    setEditName("");
-    setEditEmail("");
-    setEditPassword("");
+  const startEdit = (user) => {
+    setEditingUserId(user.id);
+    setEditForm({
+      name: user.name,
+      email: user.email,
+      password: user.password,
+    });
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    const userData = {
-      name: editName,
-      email: editEmail,
-      password: editPassword,
-    };
-    saveToLocalStorage("user", userData);
-    console.log("Updated data saved to localStorage:", userData);
+  const saveEdit = () => {
+    const updatedUsers = users.map((user) =>
+      user.id === editingUserId ? { ...user, ...editForm } : user
+    );
+    setUsers(updatedUsers);
+    saveToLocalStorage("users", updatedUsers);
+    setEditingUserId(null);
+    setEditForm({ name: "", email: "", password: "" });
+    console.log("User updated");
   };
-  useEffect(() => {
-    console.log("Current localStorage data:", localStorage.getItem("user"));
-  }, []);
+
+  const cancelEdit = () => {
+    setEditingUserId(null);
+    setEditForm({ name: "", email: "", password: "" });
+  };
+
+  const clearAllUsers = () => {
+    setUsers([]);
+    deleteFromLocalStorage("users");
+    console.log("All users cleared");
+  };
+
   return (
     <div className="container">
       <div
@@ -68,79 +95,181 @@ function Dashboard() {
           margin: "20px 0",
         }}
       >
-        Welcome User
+        Welcome to User Management Dashboard
       </div>
+
       <div>
         <h1 style={{ color: "black", fontSize: "60px", textAlign: "center" }}>
-          Dashboard
+          Registered Users
         </h1>
-        {action === "Sign Up" && (
-          <p style={{ fontSize: "24px", color: "black", textAlign: "left" }}>
-            <strong>Name:</strong>{" "}
-            {isEditing ? (
-              <input
-                type="text"
-                value={editName}
-                onChange={(e) => {
-                  setEditName(e.target.value);
-                  updateUserData("name", e.target.value);
-                }}
-              />
-            ) : (
-              editName
-            )}
+
+        {users.length === 0 ? (
+          <p style={{ textAlign: "center", fontSize: "18px", color: "#666" }}>
+            No users registered yet.
           </p>
-        )}
-        <p style={{ fontSize: "24px", color: "black", textAlign: "left" }}>
-          <strong>Email:</strong>{" "}
-          {isEditing ? (
-            <input
-              type="email"
-              value={editEmail}
-              onChange={(e) => {
-                setEditEmail(e.target.value);
-                updateUserData("email", e.target.value);
-              }}
-            />
-          ) : (
-            editEmail
-          )}
-        </p>
-        <p style={{ fontSize: "24px", color: "black", textAlign: "left" }}>
-          <strong>Password:</strong>{" "}
-          {isEditing ? (
-            <input
-              type="password"
-              value={editPassword}
-              onChange={(e) => {
-                setEditPassword(e.target.value);
-                updateUserData("password", e.target.value);
-              }}
-            />
-          ) : (
-            editPassword
-          )}
-        </p>
-        {isEditing ? (
-          <div style={{ textAlign: "center" }}>
-            <button onClick={handleSave}>Save</button>
-          </div>
         ) : (
-          <div style={{ textAlign: "center" }}>
-            <button onClick={() => setIsEditing(true)}>Edit</button>
+          <div style={{ margin: "20px 0" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                border: "1px solid #ddd",
+              }}
+            >
+              <thead>
+                <tr style={{ backgroundColor: "#f5f5f5" }}>
+                  <th style={{ border: "1px solid #ddd", padding: "12px" }}>
+                    ID
+                  </th>
+                  <th style={{ border: "1px solid #ddd", padding: "12px" }}>
+                    Name
+                  </th>
+                  <th style={{ border: "1px solid #ddd", padding: "12px" }}>
+                    Email
+                  </th>
+                  <th style={{ border: "1px solid #ddd", padding: "12px" }}>
+                    Password
+                  </th>
+
+                  <th style={{ border: "1px solid #ddd", padding: "12px" }}>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                      {user.id}
+                    </td>
+                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                      {editingUserId === user.id ? (
+                        <input
+                          type="text"
+                          value={editForm.name}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, name: e.target.value })
+                          }
+                          style={{ width: "100%", padding: "4px" }}
+                        />
+                      ) : (
+                        user.name
+                      )}
+                    </td>
+                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                      {editingUserId === user.id ? (
+                        <input
+                          type="email"
+                          value={editForm.email}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, email: e.target.value })
+                          }
+                          style={{ width: "100%", padding: "4px" }}
+                        />
+                      ) : (
+                        user.email
+                      )}
+                    </td>
+                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                      {editingUserId === user.id ? (
+                        <input
+                          type="password"
+                          value={editForm.password}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              password: e.target.value,
+                            })
+                          }
+                          style={{ width: "100%", padding: "4px" }}
+                        />
+                      ) : (
+                        user.password
+                      )}
+                    </td>
+
+                    <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                      {editingUserId === user.id ? (
+                        <div>
+                          <button
+                            onClick={saveEdit}
+                            style={{
+                              align: "center",
+                              background: "green",
+                              color: "white",
+                              padding: "4px 8px",
+                              marginRight: "5px",
+                              border: "none",
+                              borderRadius: "3px",
+                            }}
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            style={{
+                              align: "center",
+                              background: "gray",
+                              color: "white",
+                              padding: "4px 8px",
+                              border: "none",
+                              borderRadius: "3px",
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <button
+                            onClick={() => startEdit(user)}
+                            style={{
+                              align: "center",
+                              background: "blue",
+                              color: "white",
+                              padding: "4px 8px",
+                              marginRight: "5px",
+                              border: "none",
+                              borderRadius: "3px",
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => deleteUser(user.id)}
+                            style={{
+                              align: "center",
+                              background: "red",
+                              color: "white",
+                              padding: "4px 8px",
+                              border: "none",
+                              borderRadius: "3px",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
+
         <div style={{ textAlign: "center", marginTop: "20px" }}>
           <button
-            onClick={clearUserData}
+            onClick={clearAllUsers}
             style={{
               background: "red",
               color: "white",
               padding: "10px 20px",
               borderRadius: "5px",
+              border: "none",
             }}
           >
-            Clear Data
+            Clear All Users
           </button>
         </div>
       </div>
